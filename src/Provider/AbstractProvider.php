@@ -37,6 +37,8 @@ use UnexpectedValueException;
  * Represents a service provider (authorization server).
  *
  * @link http://tools.ietf.org/html/rfc6749#section-1.1 Roles (RFC 6749, §1.1)
+ *
+ * @template ResourceOwnerTemplate of ResourceOwnerInterface
  */
 abstract class AbstractProvider
 {
@@ -331,10 +333,10 @@ abstract class AbstractProvider
     /**
      * Returns the URL for requesting the resource owner's details.
      *
-     * @param AccessToken $token
+     * @param AccessTokenInterface $token
      * @return string
      */
-    abstract public function getResourceOwnerDetailsUrl(AccessToken $token);
+    abstract public function getResourceOwnerDetailsUrl(AccessTokenInterface $token);
 
     /**
      * Returns a new random string to use as the state parameter in an
@@ -837,7 +839,7 @@ abstract class AbstractProvider
      *
      * @param  array $response
      * @param  AbstractGrant $grant
-     * @return AccessTokenInterface
+     * @return AccessToken
      */
     protected function createAccessToken(array $response, AbstractGrant $grant)
     {
@@ -849,18 +851,21 @@ abstract class AbstractProvider
      * details request.
      *
      * @param  array $response
-     * @param  AccessToken $token
-     * @return ResourceOwnerInterface
+     * @param  AccessTokenInterface $token
+     * @return ResourceOwnerTemplate
      */
-    abstract protected function createResourceOwner(array $response, AccessToken $token);
+    abstract protected function createResourceOwner(
+        array $response,
+        AccessTokenInterface $token
+    ): ResourceOwnerInterface;
 
     /**
      * Requests and returns the resource owner of given access token.
      *
-     * @param  AccessToken $token
-     * @return ResourceOwnerInterface
+     * @param  AccessTokenInterface $token
+     * @return ResourceOwnerTemplate
      */
-    public function getResourceOwner(AccessToken $token)
+    public function getResourceOwner(AccessTokenInterface $token): ResourceOwnerInterface
     {
         $response = $this->fetchResourceOwnerDetails($token);
 
@@ -870,10 +875,10 @@ abstract class AbstractProvider
     /**
      * Requests resource owner details.
      *
-     * @param  AccessToken $token
+     * @param  AccessTokenInterface $token
      * @return mixed
      */
-    protected function fetchResourceOwnerDetails(AccessToken $token)
+    protected function fetchResourceOwnerDetails(AccessTokenInterface $token)
     {
         $url = $this->getResourceOwnerDetailsUrl($token);
 
